@@ -1,32 +1,47 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import "./TodoList.css";
 
+const todoReducer = (state, action) => {
+  switch (action.type) {
+    case "ADD_TASK":
+      return [...state, { text: action.payload, completed: false }];
+    case "EDIT_TASK":
+      const updatedTasks = [...state];
+      updatedTasks[action.index].text = action.payload;
+      return updatedTasks;
+    case "DELETE_TASK":
+      return state.filter((_, i) => i !== action.index);
+    case "TOGGLE_TASK_STATUS":
+      const toggledTasks = [...state];
+      toggledTasks[action.index].completed = !toggledTasks[action.index]
+        .completed;
+      return toggledTasks;
+    default:
+      return state;
+  }
+};
+
 const TodoList = () => {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, dispatch] = useReducer(todoReducer, []);
   const [newTask, setNewTask] = useState("");
 
   const addTask = () => {
     if (newTask.trim() !== "") {
-      setTasks([...tasks, { text: newTask, completed: false }]);
+      dispatch({ type: "ADD_TASK", payload: newTask });
       setNewTask("");
     }
   };
 
   const editTask = (index, newText) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].text = newText;
-    setTasks(updatedTasks);
+    dispatch({ type: "EDIT_TASK", index, payload: newText });
   };
 
   const deleteTask = (index) => {
-    const updatedTasks = tasks.filter((_, i) => i !== index);
-    setTasks(updatedTasks);
+    dispatch({ type: "DELETE_TASK", index });
   };
 
   const toggleTaskStatus = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].completed = !updatedTasks[index].completed;
-    setTasks(updatedTasks);
+    dispatch({ type: "TOGGLE_TASK_STATUS", index });
   };
 
   return (
